@@ -25,31 +25,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        btnZip = findViewById(R.id.btnZip);
         btnUnzip = findViewById(R.id.btnUnzip);
-        btnUnzip.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (FileHelper.unzip(zipPath + "dummy.zip",unzipPath)) {
-                    Toast.makeText(MainActivity.this,"Unzip successfully.",Toast.LENGTH_LONG).show();
-                }
-
-
-            }
-        });
-
-
         chkParent = findViewById(R.id.chkParent);
 
-        btnZip = findViewById(R.id.btnZip);
         btnZip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (FileHelper.zip(dataPath, zipPath, "dummy.zip", chkParent.isChecked())){
                     Toast.makeText(MainActivity.this,"Zip successfully.",Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(MainActivity.this,"Zip unSuccessful."+SDPath,Toast.LENGTH_LONG).show();
                 }
             }
         });
-
+        btnUnzip.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (FileHelper.unzip(zipPath + "dummy.zip",unzipPath)) {
+                    Toast.makeText(MainActivity.this,"Unzip successfully.",Toast.LENGTH_LONG).show();
+                }else{
+                    Toast.makeText(MainActivity.this,"UnZip unSuccessful.",Toast.LENGTH_LONG).show();
+                }
+            }
+        });
 
         //Create dummy files
         FileHelper.saveToFile(dataPath,"This is dummy data 01", "Dummy1.txt");
