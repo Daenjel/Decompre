@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ExternalStore">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <EditText
+            android:id="@+id/external_storage_editor_email"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Input your email."/>
+
+        <Button
+            android:id="@+id/external_storage_button_save_public"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save To Public External Storage"/>
+
+        <Button
+            android:id="@+id/external_storage_button_save_private"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save To Private External Storage"/>
+
+        <Button
+            android:id="@+id/external_storage_button_save_private_cache"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Save To Private Cached External Storage"/>
+
+        <Button
+            android:id="@+id/external_storage_button_display_path"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Display External Storage Directory Path"/>
+
+    </LinearLayout>
+</android.support.constraint.ConstraintLayout>
