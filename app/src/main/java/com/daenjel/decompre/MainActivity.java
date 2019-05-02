@@ -4,16 +4,20 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -23,6 +27,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.BufferedReader;
@@ -43,9 +48,11 @@ public class MainActivity extends AppCompatActivity {
 
     Button btnUnzip, btnDownload,btnRead;
     TextView textView;
+    ProgressBar progressBar;
     StorageReference islandRef;
     FirebaseStorage storageRef;
     File localFile;
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,6 +63,7 @@ public class MainActivity extends AppCompatActivity {
         btnUnzip = findViewById(R.id.btnUnzip);
         textView = findViewById(R.id.viewer);
         btnRead = findViewById(R.id.btnRead);
+        progressBar = findViewById(R.id.progress);
 
         checkPermit();
 
@@ -90,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         btnRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                progressBar.setVisibility(View.VISIBLE);
                 try {
                     Context ctx = getApplicationContext();
 
@@ -100,11 +109,14 @@ public class MainActivity extends AppCompatActivity {
                         if (fileData.length() > 0) {
                             textView.setText(fileData);
                             //textView.setSelection(fileData.length());
+                            progressBar.setVisibility(View.GONE);
                             Toast.makeText(ctx, "Load saved data complete.", Toast.LENGTH_SHORT).show();
                         } else {
+                            progressBar.setVisibility(View.GONE);
                             Toast.makeText(ctx, "Not load any data.", Toast.LENGTH_SHORT).show();
                         }
                 } catch (FileNotFoundException ex) {
+                    progressBar.setVisibility(View.GONE);
                     textView.setText("(No such file or directory)");
                     Log.e("TAG_WRITE_READ_FILE", ex.getMessage(), ex);
                 }
@@ -113,12 +125,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void downloadFire() {
+        progressBar.setVisibility(View.VISIBLE);
        islandRef = storageRef.getReference().child("sample.zip");
 
         islandRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                 // Local temp file has been created
+                progressBar.setVisibility(View.GONE);
                 textView.setText("Download successfully.");
                 Toast.makeText(MainActivity.this,"Download successfully.",Toast.LENGTH_LONG).show();
                 Log.e("LOCATION","->"+localFile);
@@ -127,17 +141,26 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
+                progressBar.setVisibility(View.GONE);
                 textView.setText("Download Failed."+exception.getMessage());
                 Toast.makeText(MainActivity.this,"Download Failed!."+exception.getMessage(),Toast.LENGTH_LONG).show();
+            }
+        }).addOnProgressListener(new OnProgressListener<FileDownloadTask.TaskSnapshot>() {
+            @Override
+            public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
+                //displaying percentage in progress dialog
+                textView.setText("Loading...."+(int) progress);
             }
         });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void checkPermit() {
 
         int external = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (external != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE},REQUEST_CODE_WRITE);
+            ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},REQUEST_CODE_WRITE);
         }
     }
     private String readFromFileInputStream(FileInputStream fileInputStream) {
