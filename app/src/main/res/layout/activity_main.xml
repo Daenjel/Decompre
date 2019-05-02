@@ -6,33 +6,46 @@
     android:padding="15dp"
     tools:context=".MainActivity">
 
+    <TextView
+        android:id="@+id/viewer"
+        android:text="@string/app_name"
+        android:textAppearance="@style/TextAppearance.AppCompat.Title"
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
     <LinearLayout
         android:id="@+id/buttons"
+        android:layout_above="@id/btnRead"
         android:orientation="horizontal"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentBottom="false"
-        android:layout_alignParentTop="true"
         android:baselineAligned="false">
         <Button
             android:id="@+id/btnZip"
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="50"
-            android:text="Zip"/>
+            android:text="Download"/>
         <Button
             android:id="@+id/btnUnzip"
             android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="50"
             android:text="Unzip" />
     </LinearLayout>
+    <Button
+        android:id="@+id/btnRead"
+        android:layout_alignParentBottom="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Read" />
 
     <CheckBox
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Include Parent Folder in zip file"
         android:id="@+id/chkParent"
+        android:visibility="gone"
         android:layout_below="@+id/buttons"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
@@ -40,6 +53,7 @@
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="fill_parent"
+        android:visibility="gone"
         android:layout_alignParentBottom="true"
         android:layout_height="wrap_content"
         android:baselineAligned="false">

@@ -1,6 +1,5 @@
 package com.daenjel.decompre;
 
-
 import android.util.Log;
 
 import java.io.BufferedInputStream;
@@ -84,8 +83,6 @@ public class FileHelper {
                 input.close();
             }
         }
-
-
 
     }
 

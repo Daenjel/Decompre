@@ -1,4 +1,4 @@
-package com.daenjel.decompre;
+package com.daenjel.decompre.ExternalStorage;
 
 import android.Manifest;
 import android.content.Context;
@@ -15,10 +15,12 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.daenjel.decompre.R;
+
 import java.io.File;
 import java.io.FileWriter;
 
-import static com.daenjel.decompre.ExternalStorageUtil.getPrivateExternalStorageBaseDir;
+import static com.daenjel.decompre.ExternalStorage.ExternalStorageUtil.getPrivateExternalStorageBaseDir;
 
 public class ExternalStore extends AppCompatActivity {
 
@@ -31,7 +33,7 @@ public class ExternalStore extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_external_store);
 
-        setTitle("dev2qa.com - Android External Storage Example.");
+        setTitle("Android External Storage.");
 
         final EditText emailEditor = (EditText) findViewById(R.id.external_storage_editor_email);
 

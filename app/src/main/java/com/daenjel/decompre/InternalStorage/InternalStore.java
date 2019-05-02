@@ -1,4 +1,4 @@
-package com.daenjel.decompre;
+package com.daenjel.decompre.InternalStorage;
 
 import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
@@ -9,6 +9,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.daenjel.decompre.R;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -33,7 +35,7 @@ public class InternalStore extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_internal_store);
 
-        setTitle("dev2qa.com - Android Read Write Internal Storage File Example.");
+        setTitle("Android Read Write Internal Storage File.");
 
         final EditText editText = (EditText) findViewById(R.id.write_read_file_edit_text);
 
