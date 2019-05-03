@@ -3,6 +3,7 @@ package com.daenjel.decompre;
 import android.Manifest;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -42,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
 
     //final static String TAG = MainActivity.class.getName();
 
-    Button btnUnzip, btnDownload,btnRead;
+    Button btnUnzip, btnDownload,btnRead,btnEncrypt;
     TextView textView;
     ProgressDialog progressDialog;
     ProgressBar progressBar;
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
         textView = findViewById(R.id.viewer);
         btnRead = findViewById(R.id.btnRead);
         progressBar = findViewById(R.id.progress);
+        btnEncrypt = findViewById(R.id.btnNext);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
@@ -74,6 +76,12 @@ public class MainActivity extends AppCompatActivity {
         localFile = new File(rootPath,"sample.zip");
         final String dataFile = unzipPath + "sample.txt" ;
 
+        btnEncrypt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(getApplicationContext(),Encryption.class));
+            }
+        });
         btnDownload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
