@@ -1,8 +1,8 @@
 package com.daenjel.decompre;
 
 import android.Manifest;
+import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,18 +11,14 @@ import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.widget.ContentLoadingProgressBar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.daenjel.decompre.ExternalStorage.ExternalStore;
-import com.daenjel.decompre.InternalStorage.InternalStore;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.storage.FileDownloadTask;
@@ -48,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
 
     Button btnUnzip, btnDownload,btnRead;
     TextView textView;
+    ProgressDialog progressDialog;
     ProgressBar progressBar;
     StorageReference islandRef;
     FirebaseStorage storageRef;
@@ -65,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
         btnRead = findViewById(R.id.btnRead);
         progressBar = findViewById(R.id.progress);
 
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
         checkPermit();
 
         File rootPath = new File(Environment.getExternalStorageDirectory(), zipPath);
@@ -84,11 +83,15 @@ public class MainActivity extends AppCompatActivity {
         btnUnzip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //progressDialog.setMessage("Installing..");
+                progressBar.setVisibility(View.VISIBLE);
                 if (FileHelper.unzip(localFile+"",unzipPath)) {
                     textView.setText("Extraction successfully.");
+                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(MainActivity.this,"Extraction successfully.",Toast.LENGTH_LONG).show();
                     Log.e("LOCATOR","->"+localFile+"....Dumping: ->"+unzipPath);
                 }else {
+                    progressBar.setVisibility(View.GONE);
                     textView.setText("Extraction Unsuccessfully.");
                     Toast.makeText(MainActivity.this,"Extraction Unsuccessfully.",Toast.LENGTH_LONG).show();
                     Log.e("LOCATOR","->"+localFile+"....Dumping: ->"+unzipPath);
@@ -98,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         btnRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressBar.setVisibility(View.VISIBLE);
+                progressDialog.show();
                 try {
                     Context ctx = getApplicationContext();
 
@@ -109,14 +112,14 @@ public class MainActivity extends AppCompatActivity {
                         if (fileData.length() > 0) {
                             textView.setText(fileData);
                             //textView.setSelection(fileData.length());
-                            progressBar.setVisibility(View.GONE);
+                            progressDialog.hide();
                             Toast.makeText(ctx, "Load saved data complete.", Toast.LENGTH_SHORT).show();
                         } else {
-                            progressBar.setVisibility(View.GONE);
+                            progressDialog.hide();
                             Toast.makeText(ctx, "Not load any data.", Toast.LENGTH_SHORT).show();
                         }
                 } catch (FileNotFoundException ex) {
-                    progressBar.setVisibility(View.GONE);
+                    progressDialog.hide();
                     textView.setText("(No such file or directory)");
                     Log.e("TAG_WRITE_READ_FILE", ex.getMessage(), ex);
                 }
@@ -125,14 +128,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void downloadFire() {
-        progressBar.setVisibility(View.VISIBLE);
+        progressDialog.show();
        islandRef = storageRef.getReference().child("sample.zip");
 
         islandRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                 // Local temp file has been created
-                progressBar.setVisibility(View.GONE);
+                progressDialog.hide();
                 textView.setText("Download successfully.");
                 Toast.makeText(MainActivity.this,"Download successfully.",Toast.LENGTH_LONG).show();
                 Log.e("LOCATION","->"+localFile);
@@ -141,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onFailure(@NonNull Exception exception) {
                 // Handle any errors
-                progressBar.setVisibility(View.GONE);
+                progressDialog.hide();
                 textView.setText("Download Failed."+exception.getMessage());
                 Toast.makeText(MainActivity.this,"Download Failed!."+exception.getMessage(),Toast.LENGTH_LONG).show();
             }
@@ -150,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
             public void onProgress(FileDownloadTask.TaskSnapshot taskSnapshot) {
                 double progress = (100.0 * taskSnapshot.getBytesTransferred()) / taskSnapshot.getTotalByteCount();
                 //displaying percentage in progress dialog
-                textView.setText("Loading...."+(int) progress);
+                progressDialog.setMessage("Loading.."+(int) progress +" %");
             }
         });
     }
