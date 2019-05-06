@@ -49,7 +49,6 @@ public class Encryption extends AppCompatActivity {
 
         String dataFile = "Leo ni Leo hapa iLearn";
         final byte [] data = dataFile.getBytes();
-        final String dFile = rootPath + "data.txt" ;
         encrypt.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -67,7 +66,12 @@ public class Encryption extends AppCompatActivity {
                     bos.close();
                     Log.e("ENCRYPTED", " -> "+ Arrays.toString(fileBytes));
 
+                    File fil = new File(rootPath+ "data_de.txt");
+                    BufferedOutputStream b = new BufferedOutputStream(new FileOutputStream(fil));
                     byte[] decodedData = decodeFile(yourKey, fileBytes);
+                    b.write(decodedData);
+                    b.flush();
+                    b.close();
                     Log.e("DECODED", " -> "+  Arrays.toString(decodedData));
                 }catch (Exception e){
                     e.printStackTrace();
@@ -100,11 +104,12 @@ public class Encryption extends AppCompatActivity {
                     FileInputStream fileInputStream = new FileInputStream(new File(rootPath +"data.txt"));
 
                     String fileData = readFromFileInputStream(fileInputStream);
+                    byte[] decrypt = fileData.getBytes();
 
                     if (fileData.length() > 0) {
-                        Log.e("ENCODED", " -> "+ Arrays.toString(fileData.getBytes()));
+                        Log.e("ENCODED", " -> "+ fileData);
                         byte[] yourKey = generateKey(pwd);
-                        byte[] decodedData = decodeFile(yourKey, fileData.getBytes());
+                        byte[] decodedData = decodeFile(yourKey, decrypt);
                         Log.e("DECODED", " -> "+ new String(decodedData));
                         Toast.makeText(ctx, "Load saved data complete.", Toast.LENGTH_SHORT).show();
                     } else {
