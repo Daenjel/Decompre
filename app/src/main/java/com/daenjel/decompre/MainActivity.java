@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
     private String SDPath = Environment.getExternalStorageDirectory().getAbsolutePath();
     private String zipPath = SDPath + "/iLearn/Decompre/Zip/" ;
     private String unzipPath = SDPath + "/iLearn/Decompre/Unzip/" ;
+    private String locker = SDPath + "/iLearn/Locked/" ;
 
     //final static String TAG = MainActivity.class.getName();
 
@@ -137,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void downloadFire() {
         progressDialog.show();
-       islandRef = storageRef.getReference().child("sample.zip");
+       islandRef = storageRef.getReference().child("EnglishG2.zip");
 
         islandRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
