@@ -21,10 +21,18 @@
         android:layout_height="wrap_content" />
     <Button
         android:id="@+id/btnNext"
+        android:visibility="gone"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
         android:layout_weight="50"
         android:text="Encryption"/>
+    <EditText
+        android:id="@+id/txt_input"
+        android:layout_margin="50dp"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textPassword"
+        android:hint="Enter Password"/>
     <LinearLayout
         android:id="@+id/buttons"
         android:layout_above="@id/btnRead"
@@ -43,7 +51,7 @@
             android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:layout_weight="50"
-            android:text="Unzip" />
+            android:text="Lock" />
     </LinearLayout>
     <Button
         android:id="@+id/btnRead"

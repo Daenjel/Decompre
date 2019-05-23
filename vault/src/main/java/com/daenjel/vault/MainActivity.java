@@ -1,15 +1,26 @@
 package com.daenjel.vault;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
+import android.Manifest;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -19,10 +30,13 @@ import android.widget.AdapterView.OnItemClickListener;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
+
 public class MainActivity extends Activity {
 
+    private static final int REQUEST_CODE_WRITE = 0;
     private String path= "";
-    private String selectedFile="";
+    private String selectedFile = Environment.getExternalStorageDirectory()+"/iLearn/Encryption";
     private Context context;
     EditText userPassword;
     ListView lv;
@@ -33,9 +47,30 @@ public class MainActivity extends Activity {
 
         userPassword = findViewById(R.id.txt_input);
         lv = findViewById(R.id.files_list);
-
+        checkPermit();
     }
 
+    private void checkPermit() {
+
+        int external = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+        if (external != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},REQUEST_CODE_WRITE);
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if (requestCode == REQUEST_CODE_WRITE){
+            int resultLength = grantResults.length;
+            if (resultLength > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+                Toast.makeText(MainActivity.this,"Permission Granted successfully.",Toast.LENGTH_LONG).show();
+            }else {
+                Toast.makeText(MainActivity.this,"Permission Not Granted.",Toast.LENGTH_LONG).show();
+            }
+        }
+    }
     protected void onStart(){
         super.onStart();
         if(lv!=null){
@@ -43,7 +78,7 @@ public class MainActivity extends Activity {
             lv.setOnItemClickListener(new ClickListener());
         }
         path="/mnt";
-        listDirContents(path);
+        //listDirContents(path);
     }
 
     public void onBackPressed(){
@@ -54,7 +89,7 @@ public class MainActivity extends Activity {
         if(path.length()>1){ //up one level of directory structure
             File f=new File(path);
             path=f.getParent();
-            listDirContents(path);
+            //listDirContents(path);
         }
         else{
             refreshThumbnails();
@@ -62,7 +97,6 @@ public class MainActivity extends Activity {
 
         }
     }
-
 
     private void refreshThumbnails(){
         context.sendBroadcast(new Intent(Intent.ACTION_MEDIA_MOUNTED, Uri.parse("file://"+ Environment.getExternalStorageDirectory())));
@@ -73,7 +107,6 @@ public class MainActivity extends Activity {
         return true;
     }
 
-
     private class ClickListener implements OnItemClickListener{
         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
             //selected item
@@ -82,14 +115,12 @@ public class MainActivity extends Activity {
             path=path+"/"+selectedItem;
             Log.e("SELECTED",""+path);
             //et.setText(path);
-            listDirContents(path);
+            //listDirContents(path);
         }
-
 
     }
 
-
-    private void listDirContents(String path){
+    /*private void listDirContents(String path){
         if(path!=null){
             try{
                 File f=new File(path);
@@ -120,17 +151,17 @@ public class MainActivity extends Activity {
             }catch(Exception e){}
         }
 
-    }
+    }*/
 
     public void lockFolder(View view){
         String password=userPassword.getText().toString();
-        File f=new File(selectedFile);
+
+        File f = new File(selectedFile);
         if(password.length()>0){
 
             if(f.isDirectory()){
-                BackTaskLock btlock=new BackTaskLock();
-                btlock.execute(password,null,null);
-
+                BackTaskLock btnLock = new BackTaskLock();
+                btnLock.execute(password,null,null);
             }
             else{
                 MessageAlert.showAlert("It is not a folder.",context);
@@ -142,7 +173,7 @@ public class MainActivity extends Activity {
     }
 
     public void startLock(String password){
-        Locker locker=new Locker(context,selectedFile,password);
+        Locker locker = new Locker(context,selectedFile,password);
         locker.lock();
     }
 
@@ -191,11 +222,10 @@ public class MainActivity extends Activity {
             pd = new ProgressDialog(context);
             pd.setTitle("Locking the folder");
             pd.setMessage("Please wait.");
-            pd.setCancelable(true);
+            pd.setCancelable(false);
             pd.setIndeterminate(true);
             pd.show();
             Log.e("LOCKED","true");
-
         }
         protected Void doInBackground(String...params){
             try{
@@ -231,7 +261,7 @@ public class MainActivity extends Activity {
             pd = new ProgressDialog(context);
             pd.setTitle("Unlocking the folder");
             pd.setMessage("Please wait.");
-            pd.setCancelable(true);
+            pd.setCancelable(false );
             pd.setIndeterminate(true);
             pd.show();
 
@@ -251,7 +281,7 @@ public class MainActivity extends Activity {
         }
         protected void onPostExecute(Void result){
             pd.dismiss();
-            listDirContents(path);//refresh the list
+            //listDirContents(path);//refresh the list
         }
 
 

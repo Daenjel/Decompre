@@ -5,6 +5,8 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -16,6 +18,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private String SDPath = Environment.getExternalStorageDirectory().getAbsolutePath();
     private String zipPath = SDPath + "/iLearn/Decompre/Zip/" ;
     private String unzipPath = SDPath + "/iLearn/Decompre/Unzip/" ;
-    private String locker = SDPath + "/iLearn/Locked/" ;
+   // private String locker = SDPath + "/iLearn/Locked/" ;
 
     //final static String TAG = MainActivity.class.getName();
 
@@ -50,12 +53,15 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     StorageReference islandRef;
     FirebaseStorage storageRef;
-    File localFile;
+    File localFile, rootPath;
+    EditText userPassword;
+    Context context;
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        this.context = this;
 
         storageRef = FirebaseStorage.getInstance();
         btnDownload = findViewById(R.id.btnZip);
@@ -64,12 +70,13 @@ public class MainActivity extends AppCompatActivity {
         btnRead = findViewById(R.id.btnRead);
         progressBar = findViewById(R.id.progress);
         btnEncrypt = findViewById(R.id.btnNext);
+        userPassword = findViewById(R.id.txt_input);
 
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
         checkPermit();
 
-        File rootPath = new File(Environment.getExternalStorageDirectory(), zipPath);
+        rootPath = new File(zipPath);
         if(!rootPath.exists()) {
             rootPath.mkdirs();
         }
@@ -92,19 +99,7 @@ public class MainActivity extends AppCompatActivity {
         btnUnzip.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //progressDialog.setMessage("Installing..");
-                progressBar.setVisibility(View.VISIBLE);
-                if (FileHelper.unzip(localFile+"",unzipPath)) {
-                    textView.setText("Extraction successfully.");
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(MainActivity.this,"Extraction successfully.",Toast.LENGTH_LONG).show();
-                    Log.e("LOCATOR","->"+localFile+"....Dumping: ->"+unzipPath);
-                }else {
-                    progressBar.setVisibility(View.GONE);
-                    textView.setText("Extraction Unsuccessfully.");
-                    Toast.makeText(MainActivity.this,"Extraction Unsuccessfully.",Toast.LENGTH_LONG).show();
-                    Log.e("LOCATOR","->"+localFile+"....Dumping: ->"+unzipPath);
-                }
+                lockFolder();
             }
         });
         btnRead.setOnClickListener(new View.OnClickListener() {
@@ -166,13 +161,87 @@ public class MainActivity extends AppCompatActivity {
             }
         });
     }
+    private void extractFiles(){
+        //progressDialog.setMessage("Installing..");
+        progressBar.setVisibility(View.VISIBLE);
+        if (FileHelper.unzip(localFile+"",unzipPath)) {
+            textView.setText("Extraction successfully.");
+            progressBar.setVisibility(View.GONE);
+            Toast.makeText(MainActivity.this,"Extraction successfully.",Toast.LENGTH_LONG).show();
+            Log.e("LOCATOR","->"+localFile+"....Dumping: ->"+unzipPath);
+        }else {
+            progressBar.setVisibility(View.GONE);
+            textView.setText("Extraction Unsuccessfully.");
+            Toast.makeText(MainActivity.this,"Extraction Unsuccessfully.",Toast.LENGTH_LONG).show();
+            Log.e("LOCATOR","->"+localFile+"....Dumping: ->"+unzipPath);
+        }
+    }
+    public void lockFolder(){
+        String password = userPassword.getText().toString();
 
+        File f = new File(String.valueOf(rootPath));
+        if(password.length()>0){
+
+            if(f.isDirectory()){
+                BackTaskLock btnLock = new BackTaskLock();
+                btnLock.execute(password,null,null);
+                Log.e("SRC FOLDER",String.valueOf(rootPath));
+                Log.e("SRC FILE",localFile+"");
+            }
+            else{
+                MessageAlert.showAlert("It is not a folder.",context);
+            }
+        }
+        else{
+            MessageAlert.showAlert("Please enter password",context);
+        }
+    }
+    private class BackTaskLock extends AsyncTask<String,Void,Void> {
+        ProgressDialog pd;
+        protected void onPreExecute(){
+            super.onPreExecute();
+            //show process dialog
+            pd = new ProgressDialog(context);
+            pd.setTitle("Locking the folder");
+            pd.setMessage("Please wait.");
+            pd.setCancelable(false);
+            pd.setIndeterminate(true);
+            pd.show();
+            Log.e("LOCKED","true");
+        }
+        protected Void doInBackground(String...params){
+            try{
+
+                startLock(params[0]);
+                Log.e("BACKGROUND","true");
+
+            }catch(Exception e){
+                pd.dismiss();   //close the dialog if error occurs
+                Log.e("HANDLING BACKGROUND",e.getMessage());
+            }
+            return null;
+
+        }
+        protected void onPostExecute(Void result){
+            pd.dismiss();
+        }
+
+    }
+    public void startLock(String password){
+        Locker locker = new Locker(context,String.valueOf(rootPath),password);
+        locker.lock();
+        Log.e("LOCKING","true");
+    }
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     private void checkPermit() {
 
         int external = ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (external != PackageManager.PERMISSION_GRANTED){
             ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.READ_EXTERNAL_STORAGE},REQUEST_CODE_WRITE);
+        }
+        int network = ContextCompat.checkSelfPermission(this,Manifest.permission.INTERNET);
+        if (network != PackageManager.PERMISSION_GRANTED){
+            ActivityCompat.requestPermissions(this,new String[] {Manifest.permission.INTERNET},REQUEST_CODE_WRITE);
         }
     }
     private String readFromFileInputStream(FileInputStream fileInputStream) {

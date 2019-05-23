@@ -22,21 +22,18 @@ import android.util.Log;
 
 class Locker{
 
-	String dirpath;
-	String password;
-	Context context;
+	private String dirpath;
+	private String password;
+	private Context context;
 	Locker(Context context,String path,String password){
 		this.dirpath=path;
 		this.password=password;
 		this.context =context;
-		
-		
 	}
-	
-	
+
 	public void lock(){
 				boolean isHead=true;
-				doCompression(dirpath);
+				//doCompression(dirpath);
 				try{
 				File f=new File(Environment.getExternalStorageDirectory().toString()+"/lockedfile.zip");
 				if(f.exists()){
@@ -47,7 +44,7 @@ class Locker{
 					FileChannel fc=fis.getChannel();				
 					int passwordInt=byteArrayToInt(password.getBytes());
 					int nRead;
-					int blockSize=1024; //encrypt the first 1kb of the package
+					int blockSize = 1024; //encrypt the first 1kb of the package
 					ByteBuffer bb=ByteBuffer.allocate(blockSize);				
 					
 					while ( (nRead=fc.read( bb )) != -1 )
@@ -67,8 +64,7 @@ class Locker{
 						bb.clear();
 					
 					}
-				
-			
+
 				fis.close();
 				fos.flush();
 				fos.close();
@@ -90,101 +86,95 @@ class Locker{
 		}catch(IOException e){e.printStackTrace();}
 		
 	}
-	
 
-public void unlock(){
-	boolean isHead=true;
-	
-			try{
-				File f=new File(dirpath);
-				if(f.isFile()){			
-					FileInputStream fis=new FileInputStream(f);
-					File tempfile=new File(context.getFilesDir(),"temp.zip");
-					FileOutputStream fos=new FileOutputStream(tempfile);
-					FileChannel fc=fis.getChannel();				
-					int blockSize=1024;
-					ByteBuffer bb=ByteBuffer.allocate(blockSize);
-					int passwordInput=byteArrayToInt(password.getBytes());
-					int nRead;
-					while ( (nRead=fc.read( bb )) != -1 )
-					{
-						bb.position(0);
-						bb.limit(nRead);				 
-						//decrypt the head section of the file
-						if(isHead){
-						while ( bb.hasRemaining())
-						 fos.write(bb.get()-passwordInput);
-						 isHead=false;
-				
-					 	}
-						else
-						
-						 fos.write(bb.array());					
-				 
-						bb.clear();
-				
-					}		
-			
-		
-					fis.close();
-					fos.flush();
-					fos.close();
-				
-					//Replacing the file content
-					String dirParent=f.getParent();
-					f.delete();
-					File unlockedFile=new File(dirParent+"/unloacked.zip");
-					copyFile(tempfile,unlockedFile);
-					extractFile(unlockedFile.getPath(), dirParent);
-					unlockedFile.delete();
-					//delete the temp file
-					tempfile.delete();
-					//delete the password
-					File filepassword=new File(context.getFilesDir(),getName(dirpath));
-					filepassword.delete();
-			
-			
-				}
-		
-			}catch(IOException e){e.printStackTrace();}
-			
+	public void unlock(){
+		boolean isHead=true;
+
+				try{
+					File f=new File(dirpath);
+					if(f.isFile()){
+						FileInputStream fis=new FileInputStream(f);
+						File tempfile=new File(context.getFilesDir(),"temp.zip");
+						FileOutputStream fos=new FileOutputStream(tempfile);
+						FileChannel fc=fis.getChannel();
+						int blockSize=1024;
+						ByteBuffer bb=ByteBuffer.allocate(blockSize);
+						int passwordInput=byteArrayToInt(password.getBytes());
+						int nRead;
+						while ( (nRead=fc.read( bb )) != -1 )
+						{
+							bb.position(0);
+							bb.limit(nRead);
+							//decrypt the head section of the file
+							if(isHead){
+							while ( bb.hasRemaining())
+							 fos.write(bb.get()-passwordInput);
+							 isHead=false;
+
+							}
+							else
+
+							 fos.write(bb.array());
+
+							bb.clear();
+
+						}
+						fis.close();
+						fos.flush();
+						fos.close();
+
+						//Replacing the file content
+						String dirParent=f.getParent();
+						f.delete();
+						File unlockedFile=new File(dirParent+"/unloacked.zip");
+						copyFile(tempfile,unlockedFile);
+						//extractFile(unlockedFile.getPath(), dirParent);
+						unlockedFile.delete();
+						//delete the temp file
+						tempfile.delete();
+						//delete the password
+						File filepassword=new File(context.getFilesDir(),getName(dirpath));
+						filepassword.delete();
+
+					}
+
+				}catch(IOException e){e.printStackTrace();}
+
+			}
+
+	private void copyFile(File src, File dst) throws IOException{
+		FileInputStream fis=new FileInputStream(src);
+		FileOutputStream fos=new FileOutputStream(dst);
+		FileChannel inChannel =fis.getChannel();
+		FileChannel outChannel = fos.getChannel();
+		try
+		{
+			inChannel.transferTo(0, inChannel.size(), outChannel);
+		}catch(IOException e){e.printStackTrace();}
+		finally
+		{
+			if (inChannel != null){
+				fis.close();
+				inChannel.close();
+			}
+			if (outChannel != null){
+				fos.close();
+				outChannel.close();
+			}
+
 		}
-
-
-private void copyFile(File src, File dst) throws IOException
-{
-	FileInputStream fis=new FileInputStream(src);
-	FileOutputStream fos=new FileOutputStream(dst);
-    FileChannel inChannel =fis.getChannel();
-    FileChannel outChannel = fos.getChannel();
-    try
-    {
-        inChannel.transferTo(0, inChannel.size(), outChannel);
-    }catch(IOException e){e.printStackTrace();}
-    finally
-    {
-        if (inChannel != null){
-        	fis.close();
-            inChannel.close();
-        }
-        if (outChannel != null){
-        	fos.close();
-            outChannel.close();
-        }
-        	
-    }
-}
-public int byteArrayToInt(byte[] password){
-int b=0;
-if(password!=null)
-	for(byte y:password){
-		b=b+y;
 	}
-return b;
 
-}
+	public int byteArrayToInt(byte[] password){
+		int b=0;
+		if(password!=null)
+			for(byte y:password){
+				b=b+y;
+			}
+		return b;
+	}
 
-public byte[] getPassword(){
+	public byte[] getPassword(){
 		byte[] password=null;
 		try {
 			File f=new File(context.getFilesDir(),getName(dirpath));
@@ -201,7 +191,6 @@ public byte[] getPassword(){
 		return password;
 		
 	}
-	
 
 	private void savePassword(String password){
 		try {
@@ -220,11 +209,12 @@ public byte[] getPassword(){
 	private String getName(String dirpath){
 		return(dirpath.substring(dirpath.lastIndexOf("/")+1));
 	}
+
 	private String getParentDir(String dirpath){
 		File file=new File(dirpath);
 		return(file.getParent());
 	}
-	
+	/*
 	public File doCompression(String src){
 		File f=new File(src);
 		File fout=null;
@@ -241,8 +231,7 @@ public byte[] getPassword(){
 					compressDir(sf.getPath(),path,zos);					
 				}
 			}
-			
-		
+
 		}
 		else{
 			Log.e("Error","Soure not found!");
@@ -254,6 +243,7 @@ public byte[] getPassword(){
 		return fout;
 		
 	}
+
 	public String getPath(String srcpath){
 		
 		String path="";
@@ -265,6 +255,7 @@ public byte[] getPassword(){
 			path=srcpath.substring(srcpath.lastIndexOf(File.separator)+1);
 		return path;
 	}
+
 	public void compressDir(String srcpath, String path, ZipOutputStream zos){
 		File fsrcdir=new File(srcpath);
 		String rpath=getPath(srcpath);	
@@ -361,6 +352,5 @@ public byte[] getPassword(){
 		}
 		
 	}
-
-   
+	*/
 }
