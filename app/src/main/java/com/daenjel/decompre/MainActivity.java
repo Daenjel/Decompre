@@ -41,9 +41,9 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_WRITE = 1;
     private String SDPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-    private String zipPath = SDPath + "/iLearn/Decompre/Zip/" ;
-    private String unzipPath = SDPath + "/iLearn/Decompre/Unzip/" ;
-   // private String locker = SDPath + "/iLearn/Locked/" ;
+    private String zipPath = SDPath + "/iLearn/Decompre/Zip/";
+    private String unzipPath = SDPath + "/iLearn/Decompre/Unzip/";
+    //private String locker = SDPath + "/iLearn/Locked/";
 
     //final static String TAG = MainActivity.class.getName();
 
@@ -53,9 +53,10 @@ public class MainActivity extends AppCompatActivity {
     ProgressBar progressBar;
     StorageReference islandRef;
     FirebaseStorage storageRef;
-    File localFile, rootPath;
+    File localFile, rootPath,unLockFile;
     EditText userPassword;
     Context context;
+    String dataFile;
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,7 +83,8 @@ public class MainActivity extends AppCompatActivity {
         }
 
         localFile = new File(rootPath,"sample.zip");
-        final String dataFile = unzipPath + "sample.txt" ;
+        unLockFile = new File(SDPath+"/iLearn/Decompre/");
+        dataFile = unzipPath + "sample.txt" ;
 
         btnEncrypt.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,32 +107,105 @@ public class MainActivity extends AppCompatActivity {
         btnRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                progressDialog.show();
-                try {
-                    Context ctx = getApplicationContext();
-
-                        FileInputStream fileInputStream = new FileInputStream(new File(dataFile));
-
-                        String fileData = readFromFileInputStream(fileInputStream);
-
-                        if (fileData.length() > 0) {
-                            textView.setText(fileData);
-                            //textView.setSelection(fileData.length());
-                            progressDialog.hide();
-                            Toast.makeText(ctx, "Load saved data complete.", Toast.LENGTH_SHORT).show();
-                        } else {
-                            progressDialog.hide();
-                            Toast.makeText(ctx, "Not load any data.", Toast.LENGTH_SHORT).show();
-                        }
-                } catch (FileNotFoundException ex) {
-                    progressDialog.hide();
-                    textView.setText("(No such file or directory)");
-                    Log.e("TAG_WRITE_READ_FILE", ex.getMessage(), ex);
-                }
+                unlockFolder();
             }
         });
     }
+    public void unlockFolder(){
+        String password = userPassword.getText().toString();
+        File f=new File(String.valueOf(unLockFile));
+        if(password.length()>0){
+            if(f.isFile()){
 
+                if(isMatched(password)){
+                    BackTaskUnlock btunlock=new BackTaskUnlock();
+                    btunlock.execute(password,null,null);
+                }
+                else{
+                    MessageAlert.showAlert("Invalid password or folder not locked",context);
+                }
+            }
+            else{
+                MessageAlert.showAlert("Please select a locked folder to unlock",context);
+            }
+        }
+        else{
+            MessageAlert.showAlert("Please enter password",context);
+        }
+    }
+    public boolean isMatched(String password){
+        boolean mat=false;
+        Unlocker locker=new Unlocker(context, localFile+"", password);
+        byte[] pas=locker.getPassword();
+        int passwordRead=locker.byteArrayToInt(pas);
+        int passwordInput=locker.byteArrayToInt(password.getBytes());
+        if(passwordRead==passwordInput) mat=true;
+        return mat;
+    }
+
+    public void startUnlock(String password){
+        Unlocker unlocker=new Unlocker(context,localFile+"",password);
+        unlocker.unlock();
+    }
+
+
+    private class BackTaskUnlock extends AsyncTask<String,Void,Void>{
+        ProgressDialog pd;
+        protected void onPreExecute(){
+            super.onPreExecute();
+            //show process dialog
+            pd = new ProgressDialog(context);
+            pd.setTitle("Unlocking the folder");
+            pd.setMessage("Please wait.");
+            pd.setCancelable(false );
+            pd.setIndeterminate(true);
+            pd.show();
+
+            Log.e("UNLOCKED","true");
+        }
+        protected Void doInBackground(String...params){
+            try{
+
+                startUnlock(params[0]);
+
+            }catch(Exception e){
+                pd.dismiss();   //close the dialog if error occurs
+
+            }
+            return null;
+
+        }
+        protected void onPostExecute(Void result){
+            pd.dismiss();
+            //listDirContents(path);//refresh the list
+        }
+
+
+    }
+    private void readFile() {
+        progressDialog.show();
+        try {
+            Context ctx = getApplicationContext();
+
+            FileInputStream fileInputStream = new FileInputStream(new File(dataFile));
+
+            String fileData = readFromFileInputStream(fileInputStream);
+
+            if (fileData.length() > 0) {
+                textView.setText(fileData);
+                //textView.setSelection(fileData.length());
+                progressDialog.hide();
+                Toast.makeText(ctx, "Load saved data complete.", Toast.LENGTH_SHORT).show();
+            } else {
+                progressDialog.hide();
+                Toast.makeText(ctx, "Not load any data.", Toast.LENGTH_SHORT).show();
+            }
+        } catch (FileNotFoundException ex) {
+            progressDialog.hide();
+            textView.setText("(No such file or directory)");
+            Log.e("TAG_WRITE_READ_FILE", ex.getMessage(), ex);
+        }
+    }
     private void downloadFire() {
         progressDialog.show();
        islandRef = storageRef.getReference().child("EnglishG2.zip");

@@ -214,7 +214,7 @@ class Locker{
 		File file=new File(dirpath);
 		return(file.getParent());
 	}
-	/*
+
 	public File doCompression(String src){
 		File f=new File(src);
 		File fout=null;
@@ -352,5 +352,4 @@ class Locker{
 		}
 		
 	}
-	*/
 }

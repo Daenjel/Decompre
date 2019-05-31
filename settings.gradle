@@ -1,1 +1,1 @@
-include ':app', ':vault'
+include ':app', ':vault', ':backtask'

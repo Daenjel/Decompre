@@ -58,7 +58,7 @@
         android:layout_alignParentBottom="true"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Read" />
+        android:text="UnLock" />
 
     <CheckBox
         android:layout_width="wrap_content"
