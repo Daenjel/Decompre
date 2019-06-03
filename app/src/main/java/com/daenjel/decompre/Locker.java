@@ -120,24 +120,6 @@ class Locker {
 		return b;
 	}
 
-	public byte[] getPassword(){
-		byte[] password=null;
-		try {
-			File f=new File(context.getFilesDir(),getName(dirpath));
-			if(f.exists()){
-					BufferedReader br=new BufferedReader(new FileReader(f));
-					password=br.readLine().getBytes();
-					br.close();
-			}
-		} catch(Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return password;
-
-	}
-
 	private void savePassword(String password){
 		try {
 			File f=new File(context.getFilesDir(),getName(dirpath)+".locked");	

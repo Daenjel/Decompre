@@ -26,8 +26,8 @@ public class MainActivity extends AppCompatActivity {
     String Holder = "";
     String[] DATA = {"/system/bin/cat", "/proc/cpuinfo"};
     InputStream inputStream;
-    Process process ;
-    byte[] byteArry ;
+    Process process;
+    byte[] byteArry;
     Button button;
     IntentFilter intentfilter;
     int deviceStatus;

@@ -83,7 +83,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         localFile = new File(rootPath,"sample.zip");
-        unLockFile = new File(SDPath+"/iLearn/Decompre/");
+        unLockFile = new File(SDPath+"/iLearn/Decompre/Zip.locked");
         dataFile = unzipPath + "sample.txt" ;
 
         btnEncrypt.setOnClickListener(new View.OnClickListener() {
@@ -123,10 +123,13 @@ public class MainActivity extends AppCompatActivity {
                 }
                 else{
                     MessageAlert.showAlert("Invalid password or folder not locked",context);
+                    Log.e("FOLDER NOT LOCKED",f+"");
+                    // /storage/emulated/0/iLearn/Decompre/Zip.locked
                 }
             }
             else{
                 MessageAlert.showAlert("Please select a locked folder to unlock",context);
+                Log.e("NOT FOLDER",f+"");
             }
         }
         else{
@@ -135,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
     }
     public boolean isMatched(String password){
         boolean mat=false;
-        Unlocker locker=new Unlocker(context, localFile+"", password);
+        Unlocker locker=new Unlocker(context, unLockFile+"", password);
         byte[] pas=locker.getPassword();
         int passwordRead=locker.byteArrayToInt(pas);
         int passwordInput=locker.byteArrayToInt(password.getBytes());
@@ -144,8 +147,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void startUnlock(String password){
-        Unlocker unlocker=new Unlocker(context,localFile+"",password);
+        Unlocker unlocker=new Unlocker(context,unLockFile+"",password);
         unlocker.unlock();
+        Log.e("LOCKED",unLockFile+"");
     }
 
 
@@ -215,8 +219,8 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
                 // Local temp file has been created
                 progressDialog.hide();
-                textView.setText("Download successfully.");
-                Toast.makeText(MainActivity.this,"Download successfully.",Toast.LENGTH_LONG).show();
+                textView.setText("Download successful.");
+                Toast.makeText(MainActivity.this,"Download successful.",Toast.LENGTH_LONG).show();
                 Log.e("LOCATION","->"+localFile);
             }
         }).addOnFailureListener(new OnFailureListener() {

@@ -41,6 +41,7 @@ class Unlocker{
                 File tempfile=new File(context.getFilesDir(),"temp.zip");
                 FileOutputStream fos=new FileOutputStream(tempfile);
                 FileChannel fc=fis.getChannel();
+                Log.e("FOLDER BEING UNLOCKED",f+"");
                 int blockSize=1024;
                 ByteBuffer bb=ByteBuffer.allocate(blockSize);
                 int passwordInput=byteArrayToInt(password.getBytes());
@@ -70,9 +71,10 @@ class Unlocker{
                 //Replacing the file content
                 String dirParent=f.getParent();
                 f.delete();
-                File unlockedFile=new File(dirParent+"/unloacked.zip");
+                File unlockedFile=new File(dirParent+"/unlocked.zip");
                 copyFile(tempfile,unlockedFile);
                 //extractFile(unlockedFile.getPath(), dirParent);
+                Log.e("UNLOCKED FILE",unlockedFile+"");
                 unlockedFile.delete();
                 //delete the temp file
                 tempfile.delete();
@@ -133,20 +135,6 @@ class Unlocker{
         }
 
         return password;
-
-    }
-
-    private void savePassword(String password){
-        try {
-
-            File f=new File(context.getFilesDir(),getName(dirpath)+".locked");
-            BufferedWriter bw=new BufferedWriter(new FileWriter(f));
-            bw.write(password);
-            bw.close();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
 
     }
 
