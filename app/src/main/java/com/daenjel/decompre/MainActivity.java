@@ -37,6 +37,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import static com.daenjel.decompre.ZipFileReader.readUsingZipFile;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int REQUEST_CODE_WRITE = 1;
@@ -107,7 +109,12 @@ public class MainActivity extends AppCompatActivity {
         btnRead.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                unlockFolder();
+                //unlockFolder();
+                try {
+                    readUsingZipFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         });
     }
@@ -212,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
     }
     private void downloadFire() {
         progressDialog.show();
-       islandRef = storageRef.getReference().child("EnglishG2.zip");
+       islandRef = storageRef.getReference().child("sample.zip");
 
         islandRef.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
             @Override
